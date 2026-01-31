@@ -1,8 +1,9 @@
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Button from '../components/atoms/Button';
 import Input from '../components/atoms/Input';
 
 const Login = () => {
+    const navigate = useNavigate();
     return (
         <div className="min-h-screen flex flex-col md:flex-row bg-white overflow-hidden font-sans">
             {/* SECCIÓN IZQUIERDA: Identidad de Marca (Basada en la imagen) */}
@@ -44,7 +45,7 @@ const Login = () => {
                         <p className="text-slate-400 font-medium italic">Inicia sesión para crear tu evento</p>
                     </div>
 
-                    <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                    <form className="space-y-6" onSubmit={() => navigate('/crear-evento')}>
                         <div className="space-y-5">
                             <Input
                                 label="Correo electrónico"
