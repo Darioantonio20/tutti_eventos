@@ -19,7 +19,8 @@ const Icons = {
     Grande: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 14.2 0L21 21Z" /><path d="M9 12h6" /></svg>,
     Masivo: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2" /><rect width="18" height="18" x="3" y="4" rx="2" /><circle cx="12" cy="10" r="2" /><line x1="7" x2="7" y1="2" y2="4" /><line x1="17" x2="17" y1="2" y2="4" /></svg>,
     Currency: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="12" x="2" y="6" rx="2" /><circle cx="12" cy="12" r="2" /><path d="M6 12h.01M18 12h.01" /></svg>,
-    Sparkles: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /><path d="M5 3v4" /><path d="M19 17v4" /><path d="M3 5h4" /><path d="M17 19h4" /></svg>
+    Sparkles: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /><path d="M5 3v4" /><path d="M19 17v4" /><path d="M3 5h4" /><path d="M17 19h4" /></svg>,
+    Clock: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
 };
 
 const CreateEvent = () => {
@@ -29,7 +30,14 @@ const CreateEvent = () => {
 
     // Step 1 State - Date & Time
     const [isAllDay, setIsAllDay] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(5);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [viewDate, setViewDate] = useState(new Date());
+
+    // Time Selection State
+    const [startTime, setStartTime] = useState({ hour: '09', minute: '00', meridiem: 'AM' });
+    const [endTime, setEndTime] = useState({ hour: '06', minute: '00', meridiem: 'PM' });
+    const [isTimeModalOpen, setIsTimeModalOpen] = useState(false);
+    const [editingTimeType, setEditingTimeType] = useState('start'); // 'start' or 'end'
 
     // Step 2 State - Event Type
     const [selectedType, setSelectedType] = useState('Cumpleaños');
@@ -39,6 +47,8 @@ const CreateEvent = () => {
     // Step 3 State - Budget
     const [minBudget, setMinBudget] = useState(15000);
     const [maxBudget, setMaxBudget] = useState(45000);
+    const [selectedCurrency, setSelectedCurrency] = useState({ code: 'MXN', symbol: '$', label: 'Peso Mexicano' });
+    const [isCurrencyModalOpen, setIsCurrencyModalOpen] = useState(false);
 
     // Step 4 State - Guests
     const [guests, setGuests] = useState(85);
@@ -58,13 +68,12 @@ const CreateEvent = () => {
         { id: 'Masivo', label: 'Masivo', range: '300+', icon: Icons.Masivo, color: 'text-amber-500' },
     ];
 
-    const days = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
-    const dates = [
-        null, null, 1, 2, 3, 4, 5,
-        6, 7, 8, 9, 10, 11, 12,
-        13, 14, 15, 16, 17, 18, 19,
-        20, 21, 22, 23, 24, 25, 26,
-        27, 28, 29, 30, 31
+    const currencies = [
+        { code: 'MXN', symbol: '$', label: 'Peso Mexicano' },
+        { code: 'USD', symbol: '$', label: 'Dólar Estadounidense' },
+        { code: 'EUR', symbol: '€', label: 'Euro' },
+        { code: 'COP', symbol: '$', label: 'Peso Colombiano' },
+        { code: 'ARS', symbol: '$', label: 'Peso Argentino' },
     ];
 
     const handleNext = () => {
@@ -85,11 +94,117 @@ const CreateEvent = () => {
         }
     };
 
+    const handleBudgetInputChange = (e, type) => {
+        // Remove non-digit chars to allow free typing but maintain numeric value
+        const val = e.target.value.replace(/\D/g, '');
+        const numVal = parseInt(val) || 0;
+
+        if (type === 'min') {
+            setMinBudget(numVal);
+        } else {
+            setMaxBudget(numVal);
+        }
+    };
+
     const handleCustomEventSubmit = (e) => {
         e.preventDefault();
         if (customEventType.trim()) {
             setSelectedType(customEventType);
             setIsCustomModalOpen(false);
+        }
+    };
+
+    // Calendar Helper Functions
+    const getDaysInMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    const getFirstDayOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+    const isToday = (day) => {
+        const today = new Date();
+        return (
+            day === today.getDate() &&
+            viewDate.getMonth() === today.getMonth() &&
+            viewDate.getFullYear() === today.getFullYear()
+        );
+    };
+    const isSelected = (day) => {
+        return (
+            day === selectedDate.getDate() &&
+            viewDate.getMonth() === selectedDate.getMonth() &&
+            viewDate.getFullYear() === selectedDate.getFullYear()
+        );
+    };
+    const isPastDate = (day) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const dateToCheck = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
+        return dateToCheck < today;
+    };
+
+    const handlePrevMonth = () => {
+        const now = new Date();
+        const prev = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
+        if (prev.getFullYear() < now.getFullYear() || (prev.getFullYear() === now.getFullYear() && prev.getMonth() < now.getMonth())) return;
+        setViewDate(prev);
+    };
+
+    const handleNextMonth = () => {
+        setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+    };
+
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const daysName = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
+
+    const renderCalendarDays = () => {
+        const daysCount = getDaysInMonth(viewDate);
+        const firstDay = getFirstDayOfMonth(viewDate);
+        const daysArr = [];
+
+        // Fill blanks
+        for (let i = 0; i < firstDay; i++) {
+            daysArr.push(<div key={`blank-${i}`} className="aspect-square" />);
+        }
+
+        // Fill dates
+        for (let day = 1; day <= daysCount; day++) {
+            const past = isPastDate(day);
+            daysArr.push(
+                <div key={day} className="aspect-square flex items-center justify-center px-1">
+                    <button
+                        disabled={past}
+                        onClick={() => setSelectedDate(new Date(viewDate.getFullYear(), viewDate.getMonth(), day))}
+                        className={`
+                            w-full h-full rounded-2xl flex items-center justify-center text-sm font-bold transition-all
+                            ${isSelected(day)
+                                ? 'bg-[#2eb8ff] text-white shadow-xl shadow-[#2eb8ff]/40 scale-110'
+                                : past
+                                    ? 'text-slate-200 cursor-not-allowed opacity-50'
+                                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 active:scale-95'
+                            }
+                            ${isToday(day) && !isSelected(day) ? 'ring-2 ring-[#2eb8ff]/20' : ''}
+                        `}
+                    >
+                        {day}
+                    </button>
+                </div>
+            );
+        }
+
+        return daysArr;
+    };
+
+    // Time Selection Helpers
+    const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
+    const minutes = ['00', '15', '30', '45'];
+
+    const openTimePicker = (type) => {
+        setEditingTimeType(type);
+        setIsTimeModalOpen(true);
+    };
+
+    const updateTime = (key, value) => {
+        if (editingTimeType === 'start') {
+            setStartTime(prev => ({ ...prev, [key]: value }));
+        } else {
+            setEndTime(prev => ({ ...prev, [key]: value }));
         }
     };
 
@@ -147,18 +262,28 @@ const CreateEvent = () => {
                                 <span className="text-[#2eb8ff] text-[10px] font-black uppercase tracking-[0.1em]">Tutti AI Assistant</span>
                             </div>
 
-                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-800 leading-[1.05] tracking-tighter transition-all duration-500">
-                                {currentStep === 1 && "¿Cuándo es tu evento?"}
-                                {currentStep === 2 && "¿Qué tipo de evento estás planeando?"}
-                                {currentStep === 3 && "¿Cuál es tu presupuesto estimado?"}
-                                {currentStep === 4 && "¿Cuántos invitados esperas?"}
-                            </h1>
-                            <p className="text-slate-400 font-medium text-lg leading-relaxed max-w-sm">
-                                {currentStep === 1 && "Selecciona una fecha tentativa. No te preocupes, podrás ajustarla más tarde if la disponibilidad cambia."}
-                                {currentStep === 2 && "Selecciona una categoría para que la IA personalice las opciones."}
-                                {currentStep === 3 && "Define un rango aproximado para que nuestra IA negocie las mejores opciones."}
-                                {currentStep === 4 && "Esto nos ayuda a calcular el espacio y los servicios ideales."}
-                            </p>
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={currentStep}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-800 leading-[1.05] tracking-tighter transition-all duration-500">
+                                        {currentStep === 1 && "¿Cuándo es tu evento?"}
+                                        {currentStep === 2 && "¿Qué tipo de evento estás planeando?"}
+                                        {currentStep === 3 && "¿Cuál es tu presupuesto estimado?"}
+                                        {currentStep === 4 && "¿Cuántos invitados esperas?"}
+                                    </h1>
+                                    <p className="text-slate-400 font-medium text-lg leading-relaxed max-w-sm mt-6">
+                                        {currentStep === 1 && "Selecciona una fecha tentativa. No te preocupes, podrás ajustarla más tarde if la disponibilidad cambia."}
+                                        {currentStep === 2 && "Selecciona una categoría para que la IA personalice las opciones."}
+                                        {currentStep === 3 && "Define un rango aproximado para que nuestra IA negocie las mejores opciones."}
+                                        {currentStep === 4 && "Esto nos ayuda a calcular el espacio y los servicios ideales."}
+                                    </p>
+                                </motion.div>
+                            </AnimatePresence>
                         </div>
                     </div>
                 </div>
@@ -180,40 +305,76 @@ const CreateEvent = () => {
                                         <div className={`grid grid-cols-2 gap-4 mt-8 transition-all duration-300 ${isAllDay ? 'opacity-30 pointer-events-none' : ''}`}>
                                             <div className="space-y-3">
                                                 <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">Inicio</span>
-                                                <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 hover:border-[#2eb8ff]/30 cursor-pointer shadow-sm transition-all active:scale-95">
-                                                    <svg className="text-slate-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                                    <span className="text-sm font-black text-slate-700">09:00 AM</span>
+                                                <div
+                                                    onClick={() => openTimePicker('start')}
+                                                    className="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 hover:border-[#2eb8ff]/30 cursor-pointer shadow-sm transition-all active:scale-95 group"
+                                                >
+                                                    <span className="text-slate-400 group-hover:text-[#2eb8ff] transition-colors">{Icons.Clock}</span>
+                                                    <span className="text-sm font-black text-slate-700">{startTime.hour}:{startTime.minute} {startTime.meridiem}</span>
                                                 </div>
                                             </div>
                                             <div className="space-y-3">
                                                 <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">Fin</span>
-                                                <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 hover:border-[#2eb8ff]/30 cursor-pointer shadow-sm transition-all active:scale-95">
-                                                    <svg className="text-slate-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                                    <span className="text-sm font-black text-slate-700">06:00 PM</span>
+                                                <div
+                                                    onClick={() => openTimePicker('end')}
+                                                    className="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 hover:border-[#2eb8ff]/30 cursor-pointer shadow-sm transition-all active:scale-95 group"
+                                                >
+                                                    <span className="text-slate-400 group-hover:text-[#2eb8ff] transition-colors">{Icons.Clock}</span>
+                                                    <span className="text-sm font-black text-slate-700">{endTime.hour}:{endTime.minute} {endTime.meridiem}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </Card>
-                                    <Card className="bg-white rounded-[2rem] border-none shadow-[0_20px_50px_rgba(0,0,0,0.02)] p-8">
+                                    <Card className="bg-white rounded-[2rem] border-none shadow-[0_20px_50px_rgba(0,0,0,0.02)] p-8 overflow-hidden">
                                         <div className="flex items-center justify-between mb-8">
-                                            <h3 className="text-xl font-black text-slate-800 tracking-tight">Octubre 2024</h3>
+                                            <AnimatePresence mode="wait">
+                                                <motion.h3
+                                                    key={viewDate.getTime()}
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -10 }}
+                                                    className="text-xl font-black text-slate-800 tracking-tight"
+                                                >
+                                                    {months[viewDate.getMonth()]} {viewDate.getFullYear()}
+                                                </motion.h3>
+                                            </AnimatePresence>
                                             <div className="flex items-center gap-2">
-                                                <button className="p-2 border border-slate-100 rounded-xl hover:bg-slate-50 text-slate-400 transition-all active:scale-95"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-                                                <button className="p-2 border border-slate-100 rounded-xl hover:bg-slate-50 text-slate-400 transition-all active:scale-95"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
-                                                <button className="text-[#2eb8ff] text-[11px] font-black uppercase tracking-wider hover:underline ml-2">Ir a hoy</button>
+                                                <button
+                                                    onClick={handlePrevMonth}
+                                                    className={`p-2 border border-slate-100 rounded-xl hover:bg-slate-50 text-slate-400 transition-all active:scale-95 ${viewDate.getMonth() === new Date().getMonth() && viewDate.getFullYear() === new Date().getFullYear() ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                                >
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                                </button>
+                                                <button
+                                                    onClick={handleNextMonth}
+                                                    className="p-2 border border-slate-100 rounded-xl hover:bg-slate-50 text-slate-400 transition-all active:scale-95"
+                                                >
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                                </button>
+                                                <button
+                                                    onClick={() => { setViewDate(new Date()); setSelectedDate(new Date()); }}
+                                                    className="text-[#2eb8ff] text-[11px] font-black uppercase tracking-wider hover:underline ml-2"
+                                                >
+                                                    Ir a hoy
+                                                </button>
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-7 gap-y-4 mb-4">
-                                            {days.map(day => <div key={day} className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-center">{day}</div>)}
+                                            {daysName.map(day => <div key={day} className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-center">{day}</div>)}
                                         </div>
-                                        <div className="grid grid-cols-7 gap-y-2">
-                                            {dates.map((date, idx) => (
-                                                <div key={idx} className="aspect-square flex items-center justify-center px-1">
-                                                    {date !== null ? (
-                                                        <button onClick={() => setSelectedDate(date)} className={`w-full h-full rounded-2xl flex items-center justify-center text-sm font-bold transition-all ${date === selectedDate ? 'bg-[#2eb8ff] text-white shadow-xl shadow-[#2eb8ff]/40 scale-110' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}>{date}</button>
-                                                    ) : null}
-                                                </div>
-                                            ))}
+                                        <div className="relative min-h-[240px]">
+                                            <AnimatePresence mode="popLayout" custom={viewDate}>
+                                                <motion.div
+                                                    key={viewDate.getMonth() + "-" + viewDate.getFullYear()}
+                                                    initial={{ opacity: 0, x: 20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    exit={{ opacity: 0, x: -20 }}
+                                                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                                                    className="grid grid-cols-7 gap-y-2"
+                                                >
+                                                    {renderCalendarDays()}
+                                                </motion.div>
+                                            </AnimatePresence>
                                         </div>
                                     </Card>
                                 </motion.div>
@@ -281,8 +442,8 @@ const CreateEvent = () => {
                                     <Card className="bg-white rounded-[2rem] border-none shadow-[0_20px_50px_rgba(0,0,0,0.02)] p-10 flex flex-col items-center">
                                         <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4">Rango Seleccionado</span>
                                         <div className="flex flex-col items-center text-4xl md:text-5xl font-black text-slate-800 tracking-tighter">
-                                            <div><AnimatedNumber value={minBudget} prefix="$" /></div>
-                                            <div className="mt-1"><AnimatedNumber value={maxBudget} prefix="$" /></div>
+                                            <div><AnimatedNumber value={minBudget} prefix={selectedCurrency.symbol} /></div>
+                                            <div className="mt-1"><AnimatedNumber value={maxBudget} prefix={selectedCurrency.symbol} /></div>
                                         </div>
                                     </Card>
                                     <div className="px-6 py-4 space-y-12">
@@ -317,23 +478,26 @@ const CreateEvent = () => {
                                                 className="absolute -top-10 bg-[#2eb8ff]/10 text-[#2eb8ff] text-[10px] font-black px-3 py-1.5 rounded-lg border border-[#2eb8ff]/10 -translate-x-1/2"
                                                 style={{ left: `${(minBudget / 100000) * 100}%` }}
                                             >
-                                                <AnimatedNumber value={minBudget / 1000} prefix="$" suffix="k" />
+                                                <AnimatedNumber value={minBudget / 1000} prefix={selectedCurrency.symbol} suffix="k" />
                                             </div>
                                             <div
                                                 className="absolute -top-10 bg-[#2eb8ff]/10 text-[#2eb8ff] text-[10px] font-black px-3 py-1.5 rounded-lg border border-[#2eb8ff]/10 -translate-x-1/2"
                                                 style={{ left: `${(maxBudget / 100000) * 100}%` }}
                                             >
-                                                <AnimatedNumber value={maxBudget / 1000} prefix="$" suffix="k" />
+                                                <AnimatedNumber value={maxBudget / 1000} prefix={selectedCurrency.symbol} suffix="k" />
                                             </div>
                                         </div>
                                     </div>
                                     <div className="space-y-6">
                                         <div className="space-y-2.5">
                                             <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">Moneda</span>
-                                            <div className="flex items-center justify-between bg-white border border-slate-100 rounded-2xl px-5 py-4 shadow-sm hover:border-[#2eb8ff]/20 transition-all cursor-pointer group">
+                                            <div
+                                                onClick={() => setIsCurrencyModalOpen(true)}
+                                                className="flex items-center justify-between bg-white border border-slate-100 rounded-2xl px-5 py-4 shadow-sm hover:border-[#2eb8ff]/20 transition-all cursor-pointer group"
+                                            >
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-brand-primary">{Icons.Currency}</div>
-                                                    <span className="text-sm font-bold text-slate-700">Peso Mexicano (MXN)</span>
+                                                    <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-brand-primary font-black text-sm">{selectedCurrency.symbol}</div>
+                                                    <span className="text-sm font-bold text-slate-700">{selectedCurrency.label} ({selectedCurrency.code})</span>
                                                 </div>
                                                 <svg className="text-slate-300 group-hover:text-[#2eb8ff] transition-colors" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                             </div>
@@ -342,15 +506,25 @@ const CreateEvent = () => {
                                             <div className="space-y-2.5">
                                                 <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">Mínimo</span>
                                                 <div className="flex items-center gap-3 bg-white border border-slate-100 rounded-2xl px-5 py-4 shadow-sm focus-within:ring-2 focus-within:ring-[#2eb8ff]/10 focus-within:border-[#2eb8ff] transition-all">
-                                                    <span className="text-slate-300 font-bold">$</span>
-                                                    <input type="number" value={minBudget} onChange={e => setMinBudget(Number(e.target.value))} className="w-full bg-transparent border-none outline-none font-black text-slate-800 text-sm" />
+                                                    <span className="text-slate-300 font-bold">{selectedCurrency.symbol}</span>
+                                                    <input
+                                                        type="text"
+                                                        value={minBudget.toLocaleString()}
+                                                        onChange={e => handleBudgetInputChange(e, 'min')}
+                                                        className="w-full bg-transparent border-none outline-none font-black text-slate-800 text-sm"
+                                                    />
                                                 </div>
                                             </div>
                                             <div className="space-y-2.5">
                                                 <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">Máximo</span>
                                                 <div className="flex items-center gap-3 bg-white border border-slate-100 rounded-2xl px-5 py-4 shadow-sm focus-within:ring-2 focus-within:ring-[#2eb8ff]/10 focus-within:border-[#2eb8ff] transition-all">
-                                                    <span className="text-slate-300 font-bold">$</span>
-                                                    <input type="number" value={maxBudget} onChange={e => setMaxBudget(Number(e.target.value))} className="w-full bg-transparent border-none outline-none font-black text-slate-800 text-sm" />
+                                                    <span className="text-slate-300 font-bold">{selectedCurrency.symbol}</span>
+                                                    <input
+                                                        type="text"
+                                                        value={maxBudget.toLocaleString()}
+                                                        onChange={e => handleBudgetInputChange(e, 'max')}
+                                                        className="w-full bg-transparent border-none outline-none font-black text-slate-800 text-sm"
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
@@ -431,6 +605,104 @@ const CreateEvent = () => {
                         Confirmar Tipo de Evento
                     </Button>
                 </form>
+            </Modal>
+
+            {/* Modal for Time Selection */}
+            <Modal
+                isOpen={isTimeModalOpen}
+                onClose={() => setIsTimeModalOpen(false)}
+                title={`Editar Hora de ${editingTimeType === 'start' ? 'Inicio' : 'Fin'}`}
+            >
+                <div className="space-y-8">
+                    <div className="flex justify-center gap-4">
+                        {/* Hour Selecor */}
+                        <div className="flex flex-col items-center gap-2">
+                            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Hora</span>
+                            <div className="grid grid-cols-4 gap-2">
+                                {hours.map(h => (
+                                    <button
+                                        key={h}
+                                        onClick={() => updateTime('hour', h)}
+                                        className={`w-10 h-10 rounded-xl font-bold transition-all ${(editingTimeType === 'start' ? startTime.hour : endTime.hour) === h ? 'bg-[#2eb8ff] text-white shadow-lg shadow-[#2eb8ff]/30' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
+                                    >
+                                        {h}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Minute Selector */}
+                        <div className="flex flex-col items-center gap-2">
+                            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Minuto</span>
+                            <div className="flex flex-col gap-2">
+                                {minutes.map(m => (
+                                    <button
+                                        key={m}
+                                        onClick={() => updateTime('minute', m)}
+                                        className={`w-12 h-10 rounded-xl font-bold transition-all ${(editingTimeType === 'start' ? startTime.minute : endTime.minute) === m ? 'bg-[#2eb8ff] text-white shadow-lg shadow-[#2eb8ff]/30' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
+                                    >
+                                        {m}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Meridiem Selector */}
+                        <div className="flex flex-col items-center gap-2">
+                            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">AM/PM</span>
+                            <div className="flex flex-col gap-2">
+                                {['AM', 'PM'].map(mer => (
+                                    <button
+                                        key={mer}
+                                        onClick={() => updateTime('meridiem', mer)}
+                                        className={`w-12 h-10 rounded-xl font-bold transition-all ${(editingTimeType === 'start' ? startTime.meridiem : endTime.meridiem) === mer ? 'bg-[#2eb8ff] text-white shadow-lg shadow-[#2eb8ff]/30' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
+                                    >
+                                        {mer}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <Button
+                        onClick={() => setIsTimeModalOpen(false)}
+                        className="w-full py-4 rounded-2xl text-sm font-black"
+                    >
+                        Confirmar Hora
+                    </Button>
+                </div>
+            </Modal>
+
+            {/* Modal for Currency Selection */}
+            <Modal
+                isOpen={isCurrencyModalOpen}
+                onClose={() => setIsCurrencyModalOpen(false)}
+                title="Seleccionar Moneda"
+            >
+                <div className="grid grid-cols-1 gap-3">
+                    {currencies.map((curr) => (
+                        <button
+                            key={curr.code}
+                            onClick={() => { setSelectedCurrency(curr); setIsCurrencyModalOpen(false); }}
+                            className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${selectedCurrency.code === curr.code ? 'border-[#2eb8ff] bg-blue-50/50 shadow-sm' : 'border-slate-50 hover:border-slate-100 hover:bg-slate-50'}`}
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg ${selectedCurrency.code === curr.code ? 'bg-[#2eb8ff] text-white' : 'bg-white text-slate-400 border border-slate-100'}`}>
+                                    {curr.symbol}
+                                </div>
+                                <div className="text-left">
+                                    <h4 className="font-bold text-slate-800">{curr.label}</h4>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{curr.code}</p>
+                                </div>
+                            </div>
+                            {selectedCurrency.code === curr.code && (
+                                <div className="w-6 h-6 bg-[#2eb8ff] rounded-full flex items-center justify-center">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
+                            )}
+                        </button>
+                    ))}
+                </div>
             </Modal>
 
             {/* Footer */}
