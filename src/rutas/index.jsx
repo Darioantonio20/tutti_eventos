@@ -6,6 +6,7 @@ import Messages from '../pages/Messages';
 import Dashboard from '../pages/Dashboard';
 import MyEvents from '../pages/MyEvents';
 import EventDetail from '../pages/EventDetail';
+import UserProfile from '../pages/UserProfile';
 
 const AppRoutes = () => {
     return (
@@ -17,6 +18,7 @@ const AppRoutes = () => {
                 <Route path="/mensajes" element={<Messages />} />
                 <Route path="/mis-eventos" element={<MyEvents />} />
                 <Route path="/evento/:id" element={<EventDetail />} />
+                <Route path="/perfil" element={<UserProfile />} />
             </Routes>
         </Router>
     );

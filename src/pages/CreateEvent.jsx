@@ -289,8 +289,8 @@ const CreateEvent = () => {
                 </div>
 
                 {/* Right Side: Interactive Content Area */}
-                <div className="w-full md:w-[60%] p-6 md:p-12 lg:p-16 bg-slate-50 overflow-y-auto flex items-start justify-center">
-                    <div className="w-full max-w-xl space-y-6 pb-24 md:pb-0 scroll-py-8">
+                <div className="w-full md:w-[60%] p-6 md:p-12 lg:p-16 bg-slate-50 overflow-y-auto flex items-center justify-center">
+                    <div className="w-full max-w-5xl space-y-10 pb-24 md:pb-0 scroll-py-8">
                         <AnimatePresence mode="wait">
                             {currentStep === 1 && (
                                 <motion.div
@@ -388,45 +388,81 @@ const CreateEvent = () => {
                                     exit={{ opacity: 0, x: -20 }}
                                     className="space-y-6"
                                 >
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-4">
                                         {eventTypes.map((type) => (
-                                            <button key={type.id} onClick={() => setSelectedType(type.id)} className={`relative p-8 rounded-[2rem] bg-white transition-all duration-500 flex flex-col items-center text-center group ${selectedType === type.id ? 'ring-2 ring-[#2eb8ff] shadow-[0_20px_60px_rgba(46,184,255,0.15)] scale-[1.02]' : 'shadow-[0_15px_40px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:-translate-y-1'}`}>
-                                                {selectedType === type.id && <div className="absolute top-4 right-4 w-6 h-6 bg-[#2eb8ff] rounded-full flex items-center justify-center shadow-lg animate-scale-in"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>}
-                                                <div className={`w-20 h-20 ${type.bgColor} ${type.color} rounded-[1.5rem] flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform duration-500`}>
+                                            <button
+                                                key={type.id}
+                                                onClick={() => setSelectedType(type.id)}
+                                                className={`
+                                                    relative p-6 md:p-14 rounded-[2.5rem] bg-white transition-all duration-500 flex flex-col items-center text-center group
+                                                    ${selectedType === type.id
+                                                        ? 'ring-4 ring-[#2eb8ff]/20 border border-[#2eb8ff] shadow-[0_20px_60px_rgba(46,184,255,0.2)] scale-[1.02] z-10'
+                                                        : 'border border-transparent shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-slate-50'
+                                                    }
+                                                `}
+                                            >
+                                                {selectedType === type.id && (
+                                                    <motion.div
+                                                        initial={{ scale: 0 }}
+                                                        animate={{ scale: 1 }}
+                                                        className="absolute top-3 right-3 md:top-5 md:right-5 w-8 h-8 md:w-10 md:h-10 bg-[#2eb8ff] rounded-full flex items-center justify-center shadow-lg transform"
+                                                    >
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                    </motion.div>
+                                                )}
+                                                <div className={`
+                                                    w-20 h-20 md:w-32 md:h-32 mb-5 md:mb-8 rounded-[1.5rem] md:rounded-[2.5rem] flex items-center justify-center text-4xl md:text-6xl transition-transform duration-500
+                                                    ${selectedType === type.id ? 'scale-110' : 'group-hover:scale-110'}
+                                                    ${type.bgColor} ${type.color}
+                                                `}>
                                                     {type.icon}
                                                 </div>
-                                                <h3 className="text-xl font-black text-slate-800 mb-2">{type.label}</h3>
-                                                <p className="text-sm font-medium text-slate-400">{type.sublabel}</p>
+                                                <h3 className="text-lg md:text-3xl font-black text-slate-800 mb-2 leading-tight">{type.label}</h3>
+                                                <p className="text-xs md:text-base font-bold text-slate-400 leading-tight">{type.sublabel}</p>
                                             </button>
                                         ))}
                                     </div>
 
                                     {/* Render Custom Selection if exists */}
                                     {selectedType !== 'Boda' && selectedType !== 'Cumpleaños' && selectedType !== 'Corporativo' && selectedType !== 'Graduación' && (
-                                        <div className="p-6 rounded-[2rem] bg-white border-2 border-[#2eb8ff] shadow-lg flex items-center justify-between">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 bg-blue-50 text-[#2eb8ff] rounded-2xl flex items-center justify-center">{Icons.Sparkles}</div>
-                                                <div>
-                                                    <h4 className="font-black text-slate-800">{selectedType}</h4>
-                                                    <p className="text-xs font-medium text-slate-400">Tipo de evento personalizado</p>
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="p-1 rounded-[2rem] bg-gradient-to-r from-[#2eb8ff] to-[#00d2ff] p-[2px] shadow-lg shadow-blue-200"
+                                        >
+                                            <div className="bg-white rounded-[1.9rem] p-5 flex items-center justify-between">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 bg-blue-50 text-[#2eb8ff] rounded-2xl flex items-center justify-center shadow-inner">{Icons.Sparkles}</div>
+                                                    <div>
+                                                        <h4 className="font-black text-slate-800 text-lg">{selectedType}</h4>
+                                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Personalizado</p>
+                                                    </div>
                                                 </div>
+                                                <button onClick={() => setIsCustomModalOpen(true)} className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-50 text-slate-400 transition-colors">
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                                </button>
                                             </div>
-                                            <button onClick={() => setIsCustomModalOpen(true)} className="text-[#2eb8ff] text-xs font-black uppercase tracking-wider hover:underline">Editar</button>
-                                        </div>
+                                        </motion.div>
                                     )}
 
                                     <button
                                         onClick={() => setIsCustomModalOpen(true)}
-                                        className="w-full bg-white p-6 rounded-3xl shadow-[0_15px_40px_rgba(0,0,0,0.02)] border border-transparent hover:border-[#2eb8ff]/20 flex items-center justify-between px-8 group transition-all active:scale-[0.99]"
+                                        className="w-full bg-white p-2 rounded-[2rem] shadow-[0_15px_40px_rgba(0,0,0,0.02)] border border-slate-100 hover:border-[#2eb8ff]/30 group transition-all active:scale-[0.99] overflow-hidden"
                                     >
-                                        <div className="flex items-center gap-5">
-                                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-[#2eb8ff] group-hover:rotate-12 transition-transform">{Icons.Sparkles}</div>
-                                            <div className="text-left">
-                                                <h4 className="font-black text-slate-800">Otro tipo de evento</h4>
-                                                <p className="text-xs font-medium text-slate-400">Personalizar desde cero</p>
+                                        <div className="flex items-center justify-between p-4 px-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 group-hover:bg-[#2eb8ff] group-hover:text-white transition-colors duration-300">
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                                                </div>
+                                                <div className="text-left">
+                                                    <h4 className="font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Otro tipo de evento</h4>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-[#2eb8ff] transition-colors">Personalizar</p>
+                                                </div>
+                                            </div>
+                                            <div className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center group-hover:border-[#2eb8ff] group-hover:bg-[#2eb8ff] transition-all">
+                                                <svg className="text-slate-300 group-hover:text-white transition-colors" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                                             </div>
                                         </div>
-                                        <svg className="text-slate-300 group-hover:text-[#2eb8ff] group-hover:translate-x-1 transition-all" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                                     </button>
                                 </motion.div>
                             )}
@@ -437,19 +473,36 @@ const CreateEvent = () => {
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
-                                    className="space-y-8"
+                                    className="space-y-8 md:space-y-12"
                                 >
-                                    <Card className="bg-white rounded-[2rem] border-none shadow-[0_20px_50px_rgba(0,0,0,0.02)] p-10 flex flex-col items-center">
-                                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4">Rango Seleccionado</span>
-                                        <div className="flex flex-col items-center text-4xl md:text-5xl font-black text-slate-800 tracking-tighter">
-                                            <div><AnimatedNumber value={minBudget} prefix={selectedCurrency.symbol} /></div>
-                                            <div className="mt-1"><AnimatedNumber value={maxBudget} prefix={selectedCurrency.symbol} /></div>
+                                    <div className="bg-white rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.03)] p-10 md:p-16 flex flex-col items-center">
+                                        <span className="text-xs md:text-sm font-black text-slate-300 uppercase tracking-[0.3em] mb-4 md:mb-8">Rango Seleccionado</span>
+                                        <div className="flex flex-col items-center text-5xl md:text-8xl font-black text-slate-800 tracking-tighter leading-none">
+                                            <div className="flex items-start">
+                                                <span className="text-2xl md:text-4xl text-slate-300 mr-2 mt-2">{selectedCurrency.symbol}</span>
+                                                <AnimatedNumber value={minBudget} />
+                                            </div>
+                                            <div className="w-full h-[2px] bg-slate-100 my-2 md:my-4 rounded-full" />
+                                            <div className="flex items-start text-slate-700 scale-90">
+                                                <span className="text-2xl md:text-4xl mr-2 mt-2 text-slate-400">{selectedCurrency.symbol}</span>
+                                                <AnimatedNumber value={maxBudget} />
+                                            </div>
                                         </div>
-                                    </Card>
-                                    <div className="px-6 py-4 space-y-12">
-                                        <div className="relative h-2 bg-slate-200 rounded-full">
+                                    </div>
+
+                                    <div className="px-4 md:px-10 space-y-16">
+                                        {/* Range Slider Container */}
+                                        <div className="relative h-4 bg-slate-100 rounded-full">
                                             <div
-                                                className="absolute h-full bg-[#2eb8ff] rounded-full"
+                                                className="absolute h-full bg-[#2eb8ff] rounded-full opacity-30"
+                                                style={{
+                                                    left: `${(minBudget / 100000) * 100}%`,
+                                                    right: `${100 - (maxBudget / 100000) * 100}%`
+                                                }}
+                                            />
+                                            {/* Active Range Bar */}
+                                            <div
+                                                className="absolute h-full bg-[#2eb8ff] rounded-full shadow-[0_0_20px_rgba(46,184,255,0.5)]"
                                                 style={{
                                                     left: `${(minBudget / 100000) * 100}%`,
                                                     right: `${100 - (maxBudget / 100000) * 100}%`
@@ -462,7 +515,7 @@ const CreateEvent = () => {
                                                 step="1000"
                                                 value={minBudget}
                                                 onChange={(e) => handleSliderChange(e, 'min')}
-                                                className="absolute w-full h-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-8 [&::-webkit-slider-thumb]:h-8 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-[#2eb8ff] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:transition-transform"
+                                                className="absolute w-full h-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-8 [&::-webkit-slider-thumb]:h-8 md:[&::-webkit-slider-thumb]:w-10 md:[&::-webkit-slider-thumb]:h-10 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-4 md:[&::-webkit-slider-thumb]:border-8 [&::-webkit-slider-thumb]:border-[#2eb8ff] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:hover:scale-125 [&::-webkit-slider-thumb]:transition-transform z-20"
                                             />
                                             <input
                                                 type="range"
@@ -471,62 +524,73 @@ const CreateEvent = () => {
                                                 step="1000"
                                                 value={maxBudget}
                                                 onChange={(e) => handleSliderChange(e, 'max')}
-                                                className="absolute w-full h-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-8 [&::-webkit-slider-thumb]:h-8 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-[#2eb8ff] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:transition-transform"
+                                                className="absolute w-full h-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-8 [&::-webkit-slider-thumb]:h-8 md:[&::-webkit-slider-thumb]:w-10 md:[&::-webkit-slider-thumb]:h-10 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-4 md:[&::-webkit-slider-thumb]:border-8 [&::-webkit-slider-thumb]:border-[#2eb8ff] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:hover:scale-125 [&::-webkit-slider-thumb]:transition-transform z-20"
                                             />
 
+                                            {/* Floating Labels */}
                                             <div
-                                                className="absolute -top-10 bg-[#2eb8ff]/10 text-[#2eb8ff] text-[10px] font-black px-3 py-1.5 rounded-lg border border-[#2eb8ff]/10 -translate-x-1/2"
+                                                className="absolute -top-12 md:-top-16 bg-[#2eb8ff] text-white text-xs md:text-sm font-black px-4 py-2 rounded-xl shadow-lg shadow-blue-200/50 -translate-x-1/2 transition-all"
                                                 style={{ left: `${(minBudget / 100000) * 100}%` }}
                                             >
-                                                <AnimatedNumber value={minBudget / 1000} prefix={selectedCurrency.symbol} suffix="k" />
+                                                Mín {selectedCurrency.symbol}{minBudget / 1000}k
                                             </div>
                                             <div
-                                                className="absolute -top-10 bg-[#2eb8ff]/10 text-[#2eb8ff] text-[10px] font-black px-3 py-1.5 rounded-lg border border-[#2eb8ff]/10 -translate-x-1/2"
+                                                className="absolute -top-12 md:-top-16 bg-[#2eb8ff] text-white text-xs md:text-sm font-black px-4 py-2 rounded-xl shadow-lg shadow-blue-200/50 -translate-x-1/2 transition-all"
                                                 style={{ left: `${(maxBudget / 100000) * 100}%` }}
                                             >
-                                                <AnimatedNumber value={maxBudget / 1000} prefix={selectedCurrency.symbol} suffix="k" />
+                                                Máx {selectedCurrency.symbol}{maxBudget / 1000}k
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="space-y-6">
-                                        <div className="space-y-2.5">
-                                            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">Moneda</span>
-                                            <div
-                                                onClick={() => setIsCurrencyModalOpen(true)}
-                                                className="flex items-center justify-between bg-white border border-slate-100 rounded-2xl px-5 py-4 shadow-sm hover:border-[#2eb8ff]/20 transition-all cursor-pointer group"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-brand-primary font-black text-sm">{selectedCurrency.symbol}</div>
-                                                    <span className="text-sm font-bold text-slate-700">{selectedCurrency.label} ({selectedCurrency.code})</span>
-                                                </div>
-                                                <svg className="text-slate-300 group-hover:text-[#2eb8ff] transition-colors" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2.5">
-                                                <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">Mínimo</span>
-                                                <div className="flex items-center gap-3 bg-white border border-slate-100 rounded-2xl px-5 py-4 shadow-sm focus-within:ring-2 focus-within:ring-[#2eb8ff]/10 focus-within:border-[#2eb8ff] transition-all">
-                                                    <span className="text-slate-300 font-bold">{selectedCurrency.symbol}</span>
+
+                                    <div className="space-y-8">
+                                        <div className="grid grid-cols-2 gap-4 md:gap-8">
+                                            {/* Min Input */}
+                                            <div className="space-y-4">
+                                                <span className="text-xs font-black text-slate-300 uppercase tracking-widest ml-2">Mínimo</span>
+                                                <div className="flex items-center gap-4 bg-white border border-slate-100 rounded-[1.5rem] px-6 py-6 md:py-8 shadow-sm focus-within:ring-4 focus-within:ring-[#2eb8ff]/10 focus-within:border-[#2eb8ff] transition-all group hover:border-slate-200">
+                                                    <span className="text-slate-300 font-black text-xl md:text-2xl group-focus-within:text-[#2eb8ff] transition-colors">{selectedCurrency.symbol}</span>
                                                     <input
                                                         type="text"
                                                         value={minBudget.toLocaleString()}
                                                         onChange={e => handleBudgetInputChange(e, 'min')}
-                                                        className="w-full bg-transparent border-none outline-none font-black text-slate-800 text-sm"
+                                                        className="w-full bg-transparent border-none outline-none font-black text-slate-800 text-xl md:text-3xl"
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="space-y-2.5">
-                                                <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">Máximo</span>
-                                                <div className="flex items-center gap-3 bg-white border border-slate-100 rounded-2xl px-5 py-4 shadow-sm focus-within:ring-2 focus-within:ring-[#2eb8ff]/10 focus-within:border-[#2eb8ff] transition-all">
-                                                    <span className="text-slate-300 font-bold">{selectedCurrency.symbol}</span>
+                                            {/* Max Input */}
+                                            <div className="space-y-4">
+                                                <span className="text-xs font-black text-slate-300 uppercase tracking-widest ml-2">Máximo</span>
+                                                <div className="flex items-center gap-4 bg-white border border-slate-100 rounded-[1.5rem] px-6 py-6 md:py-8 shadow-sm focus-within:ring-4 focus-within:ring-[#2eb8ff]/10 focus-within:border-[#2eb8ff] transition-all group hover:border-slate-200">
+                                                    <span className="text-slate-300 font-black text-xl md:text-2xl group-focus-within:text-[#2eb8ff] transition-colors">{selectedCurrency.symbol}</span>
                                                     <input
                                                         type="text"
                                                         value={maxBudget.toLocaleString()}
                                                         onChange={e => handleBudgetInputChange(e, 'max')}
-                                                        className="w-full bg-transparent border-none outline-none font-black text-slate-800 text-sm"
+                                                        className="w-full bg-transparent border-none outline-none font-black text-slate-800 text-xl md:text-3xl"
                                                     />
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        {/* Currency Selector */}
+                                        <div className="space-y-4">
+                                            <span className="text-xs font-black text-slate-300 uppercase tracking-widest ml-2">Moneda</span>
+                                            <button
+                                                onClick={() => setIsCurrencyModalOpen(true)}
+                                                className="w-full flex items-center justify-between bg-white border border-slate-100 rounded-[1.5rem] px-6 py-6 md:py-8 shadow-sm hover:border-[#2eb8ff]/30 hover:shadow-lg hover:shadow-blue-50 transition-all group"
+                                            >
+                                                <div className="flex items-center gap-4 md:gap-6">
+                                                    <div className="w-12 h-12 md:w-16 md:h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-brand-primary font-black text-lg md:text-2xl group-hover:scale-110 transition-transform">{selectedCurrency.symbol}</div>
+                                                    <div className="text-left">
+                                                        <span className="block text-lg md:text-2xl font-black text-slate-800">{selectedCurrency.label}</span>
+                                                        <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">{selectedCurrency.code}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center text-slate-300 group-hover:bg-[#2eb8ff] group-hover:text-white group-hover:border-[#2eb8ff] transition-all">
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                                </div>
+                                            </button>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -538,35 +602,84 @@ const CreateEvent = () => {
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
-                                    className="space-y-10"
+                                    className="space-y-8 md:space-y-12"
                                 >
-                                    <Card className="bg-white rounded-[2rem] border-none shadow-[0_20px_60px_rgba(0,0,0,0.03)] p-10 flex flex-col items-center">
-                                        <div className="flex items-center gap-10">
-                                            <button onClick={() => setGuests(prev => Math.max(1, prev - 1))} className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-3xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all active:scale-90">−</button>
-                                            <div className="flex flex-col items-center min-w-[120px]">
-                                                <span className="text-7xl font-black text-slate-800 tracking-tighter">
+                                    {/* Main Counter Card */}
+                                    <div className="bg-white rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.03)] p-12 md:p-24 flex flex-col items-center justify-center relative overflow-hidden">
+                                        {/* Decorative background blur */}
+                                        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-slate-50/50 to-transparent pointer-events-none" />
+
+                                        <div className="relative flex items-center justify-between w-full max-w-lg gap-6">
+                                            <button
+                                                onClick={() => setGuests(prev => Math.max(1, prev - 1))}
+                                                className="w-16 h-16 md:w-24 md:h-24 bg-slate-100/80 hover:bg-slate-200 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center text-3xl md:text-5xl text-slate-400 transition-all active:scale-90"
+                                            >
+                                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                            </button>
+
+                                            <div className="flex flex-col items-center">
+                                                <span className="text-7xl md:text-9xl font-black text-slate-800 tracking-tighter leading-none mb-3">
                                                     <AnimatedNumber value={guests} />
                                                 </span>
-                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2">Invitados</span>
+                                                <span className="text-xs md:text-sm font-black text-slate-400 uppercase tracking-[0.4em] ml-1">Invitados</span>
                                             </div>
-                                            <button onClick={() => setGuests(prev => prev + 1)} className="w-16 h-16 bg-[#2eb8ff] rounded-2xl flex items-center justify-center text-3xl text-white shadow-lg shadow-[#2eb8ff]/30 hover:scale-105 transition-all active:scale-90">+</button>
+
+                                            <button
+                                                onClick={() => setGuests(prev => prev + 1)}
+                                                className="w-16 h-16 md:w-24 md:h-24 bg-[#2eb8ff] hover:bg-[#25abf0] rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center text-3xl md:text-5xl text-white shadow-lg shadow-blue-300/50 transition-all active:scale-90 hover:shadow-xl hover:-translate-y-1"
+                                            >
+                                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                            </button>
                                         </div>
-                                    </Card>
+                                    </div>
+
+                                    {/* Suggested Ranges Grid */}
                                     <div className="space-y-6">
-                                        <div className="flex items-center gap-3 ml-2">
-                                            <span className="text-[#2eb8ff]">{Icons.Mediano}</span>
-                                            <span className="text-sm font-black text-slate-800">Rangos sugeridos</span>
+                                        <div className="flex items-center justify-center gap-2 opacity-80">
+                                            <svg className="text-[#2eb8ff]" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                                            <span className="text-sm font-bold text-slate-800">Rangos sugeridos</span>
                                         </div>
+
                                         <div className="grid grid-cols-2 gap-4">
                                             {guestRanges.map((range) => (
-                                                <button key={range.id} onClick={() => {
-                                                    setGuestRange(range.id);
-                                                    setGuests(parseInt(range.range.split(' - ')[0]) || 300);
-                                                }} className={`p-6 rounded-3xl bg-white border-2 transition-all duration-300 relative group ${guestRange === range.id ? 'border-[#2eb8ff] shadow-lg scale-[1.02]' : 'border-transparent shadow-sm hover:border-slate-100 hover:shadow-md'}`}>
-                                                    {guestRange === range.id && <div className="absolute top-3 right-3 w-2 h-2 bg-[#2eb8ff] rounded-full animate-pulse" />}
-                                                    <div className={`text-2xl mb-3 group-hover:scale-110 transition-transform ${range.color}`}>{range.icon}</div>
-                                                    <div className="font-black text-slate-800 text-lg">{range.label}</div>
-                                                    <div className="text-xs font-bold text-slate-400 mt-1">{range.range}</div>
+                                                <button
+                                                    key={range.id}
+                                                    onClick={() => {
+                                                        setGuestRange(range.id);
+                                                        // Update guest count based on range (midpoint)
+                                                        const val = range.range.includes('+') ? 350 : parseInt(range.range.split('-')[0]) + 10;
+                                                        setGuests(val);
+                                                    }}
+                                                    className={`
+                                                        relative p-6 rounded-[2rem] border transition-all duration-300 flex flex-col items-center text-center group
+                                                        ${guestRange === range.id
+                                                            ? 'bg-blue-50/30 border-[#2eb8ff] ring-1 ring-[#2eb8ff]/50 shadow-lg shadow-blue-100 z-10'
+                                                            : 'bg-white border-transparent shadow-[0_10px_30px_rgba(0,0,0,0.02)] hover:border-slate-100 hover:shadow-md hover:-translate-y-1'
+                                                        }
+                                                    `}
+                                                >
+                                                    {guestRange === range.id && (
+                                                        <motion.div
+                                                            layoutId="activeRange"
+                                                            className="absolute top-4 right-4 w-3 h-3 bg-[#2eb8ff] rounded-full shadow-sm"
+                                                        />
+                                                    )}
+
+                                                    <div className={`
+                                                        text-3xl mb-4 transition-transform duration-300
+                                                        ${guestRange === range.id ? 'scale-110' : 'group-hover:scale-110 grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100'}
+                                                        ${range.color}
+                                                    `}>
+                                                        {range.icon}
+                                                    </div>
+
+                                                    <div className="font-black text-slate-800 text-lg mb-1">{range.label}</div>
+                                                    <div className={`
+                                                        px-3 py-1 rounded-full text-[10px] font-bold tracking-wide
+                                                        ${guestRange === range.id ? 'bg-[#2eb8ff] text-white' : 'bg-slate-100 text-slate-400'}
+                                                    `}>
+                                                        {range.range}
+                                                    </div>
                                                 </button>
                                             ))}
                                         </div>
