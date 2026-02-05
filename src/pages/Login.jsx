@@ -92,9 +92,30 @@ const Login = () => {
                         </div>
                     </form>
 
-                    <p className="text-center text-slate-400 font-medium text-sm">
-                        ¿No tienes cuenta? <button className="text-brand-primary font-black hover:underline ml-1">Regístrate</button>
-                    </p>
+                    <div className="space-y-4">
+                        <p className="text-center text-slate-400 font-medium text-sm">
+                            ¿No tienes cuenta? <button className="text-brand-primary font-black hover:underline ml-1">Regístrate</button>
+                        </p>
+
+                        {/* Divider */}
+                        <div className="relative flex items-center">
+                            <div className="flex-grow border-t border-slate-100"></div>
+                            <span className="flex-shrink mx-4 text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">O</span>
+                            <div className="flex-grow border-t border-slate-100"></div>
+                        </div>
+
+                        {/* Botón de Registro como Servicio */}
+                        <button
+                            onClick={() => navigate('/registro-proveedor')}
+                            className="w-full py-4 px-6 bg-gradient-to-r from-brand-dark to-slate-800 text-white rounded-2xl font-bold hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] border border-slate-700 group"
+                        >
+                            <div className="flex items-center justify-center gap-3">
+                                <span className="text-xl">💼</span>
+                                <span>Registrarte como Servicio</span>
+                                <span className="group-hover:translate-x-1 transition-transform">→</span>
+                            </div>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
